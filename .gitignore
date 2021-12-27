@@ -116,3 +116,4 @@ GitHub.sublime-settings
 .history
 
 static_root
+db.sqlite3
