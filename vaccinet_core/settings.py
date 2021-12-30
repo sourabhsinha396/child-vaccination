@@ -41,6 +41,7 @@ INSTALLED_APPS = [
 
     # custom apps
     'apps.vaccination',  #You might need to add full path e.g. apps.vaccination in apps.py
+    'apps.accounts'
 ]
 
 MIDDLEWARE = [
@@ -134,3 +135,8 @@ MESSAGE_TAGS = {
     messages.WARNING: "alert-warning",
     messages.ERROR: "alert-danger",
 } 
+
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+    "apps.accounts.custom_auth_backend.EmailAuthBackend",
+]
