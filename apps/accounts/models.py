@@ -24,7 +24,9 @@ class Profile(models.Model):
     aadhar  = models.CharField(max_length=12,blank=True,null=True)
     phone   = models.CharField(max_length=10,blank=True,null=True)
     image   = models.ImageField(upload_to=get_file_path,blank=True,null=True)
-    medical_staff = models.BooleanField(default=False)
+    place   = models.CharField(max_length=200,blank=True,null=True)
+    is_medical_staff = models.BooleanField(default=False)
+
 
     def __str__(self):
         return self.user.username
