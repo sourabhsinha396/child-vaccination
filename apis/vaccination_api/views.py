@@ -4,8 +4,9 @@ from rest_framework import permissions
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
 
-from apps.vaccination.models import Parent
-from .serializers import ParentSearchSerializer
+from apps.vaccination.models import Parent, Mother, Child
+from .serializers import (ParentSearchSerializer, MotherSerializer, ChildSerializer, 
+                MotherInfoSerializer, ChildInfoSerializer)
 
 
 class IsMedicalStaff(permissions.BasePermission):
@@ -43,4 +44,27 @@ def search_parent_by_aadhar(request):
             return Response({"message": "Parent not found"})
     return Response("Enter aadhar number")
     
+
+@csrf_exempt
+@api_view(['GET',])
+@permission_classes((permissions.IsAuthenticated, IsMedicalStaff))
+def get_mother_by_slug(request,slug):
+    try:
+        mother = Mother.objects.get(slug=slug)
+        serializer = MotherInfoSerializer(mother)
+        return Response(serializer.data)
+    except Mother.DoesNotExist:
+        return Response({"message": "Mother not found in our database"})
+
+
+@csrf_exempt
+@api_view(['GET',])
+@permission_classes((permissions.IsAuthenticated, IsMedicalStaff))
+def get_child_by_slug(request,slug):
+    try:
+        child = Child.objects.get(slug=slug)
+        serializer = ChildInfoSerializer(child)
+        return Response(serializer.data)
+    except Child.DoesNotExist:
+        return Response({"message": "Child not found in our database"})
 
