@@ -3,10 +3,12 @@ from rest_framework.response import Response
 from rest_framework import permissions
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
 
-from apps.vaccination.models import Parent, Mother, Child
+from apps.vaccination.models import Parent, Mother, Child, Vaccine, ChildVaccinated, MotherVaccinated
 from .serializers import (ParentSearchSerializer, MotherSerializer, ChildSerializer, 
-                MotherInfoSerializer, ChildInfoSerializer)
+                MotherInfoSerializer, ChildInfoSerializer, VaccineSerializer,
+                ChildVaccinatedSerializer, MotherVaccinatedSerializer)
 
 
 class IsMedicalStaff(permissions.BasePermission):
@@ -45,7 +47,6 @@ def search_parent_by_aadhar(request):
     return Response("Enter aadhar number")
     
 
-@csrf_exempt
 @api_view(['GET',])
 @permission_classes((permissions.IsAuthenticated, IsMedicalStaff))
 def get_mother_by_slug(request,slug):
@@ -57,7 +58,6 @@ def get_mother_by_slug(request,slug):
         return Response({"message": "Mother not found in our database"})
 
 
-@csrf_exempt
 @api_view(['GET',])
 @permission_classes((permissions.IsAuthenticated, IsMedicalStaff))
 def get_child_by_slug(request,slug):
@@ -68,3 +68,83 @@ def get_child_by_slug(request,slug):
     except Child.DoesNotExist:
         return Response({"message": "Child not found in our database"})
 
+
+@api_view(['GET',])
+@permission_classes((permissions.AllowAny,))
+def vaccine_list(request):
+    vaccines = Vaccine.objects.all()
+    serializer = VaccineSerializer(vaccines, many=True)
+    return Response(serializer.data)
+
+
+@api_view(['GET',])
+@permission_classes((permissions.IsAuthenticated, IsMedicalStaff))
+def is_child_vaccinated(request,slug,vaccine):
+    try:
+        child = Child.objects.get(slug=slug)
+        child_vaccinated = child.child_vaccinated.filter(vaccine=vaccine).first()
+        vaccination_details = ChildVaccinatedSerializer(child_vaccinated)
+        if child_vaccinated:
+            return Response({"message": "True","vaccination_details":vaccination_details.data})
+        else:
+            return Response({"message": "False"})
+    except Child.DoesNotExist:
+        return Response({"message": "Child not found in our database"})
+
+
+@api_view(['POST',])
+@permission_classes((permissions.IsAuthenticated, IsMedicalStaff))
+def save_child_vaccination_info(request):
+    child_vaccinated = ChildVaccinatedSerializer(data=request.data)
+    if child_vaccinated.is_valid():
+        child_vaccinated.save()
+        return Response(child_vaccinated.data)
+    return Response(child_vaccinated.errors)
+
+
+@api_view(['POST',])
+@permission_classes((permissions.IsAuthenticated, IsMedicalStaff))
+def save_mother_vaccination_info(request):
+    mother_vaccinated = MotherVaccinatedSerializer(data=request.data)
+    if mother_vaccinated.is_valid():
+        mother_vaccinated.save()
+        return Response(mother_vaccinated.data)
+    return Response(mother_vaccinated.errors)
+
+
+@api_view(['POST',])
+@permission_classes((permissions.IsAuthenticated, IsMedicalStaff))
+def update_child_vaccination_info(request,id):
+    child = ChildVaccinated.objects.get(id=id)
+    child_vaccinated = ChildVaccinatedSerializer(instance=child, data=request.data)
+    if child_vaccinated.is_valid():
+        child_vaccinated.save()
+        return Response(child_vaccinated.data)
+    return Response(child_vaccinated.errors)
+
+
+@api_view(['POST',])
+@permission_classes((permissions.IsAuthenticated, IsMedicalStaff))
+def update_mother_vaccination_info(request,id):
+    mother = get_object_or_404(MotherVaccinated,id=id)
+    mother_vaccinated = MotherVaccinatedSerializer(instance=mother, data=request.data)
+    if mother_vaccinated.is_valid():
+        mother_vaccinated.save()
+        return Response(mother_vaccinated.data)
+    return Response(mother_vaccinated.errors)
+
+
+@api_view(['DELETE',])
+@permission_classes((permissions.IsAuthenticated, IsMedicalStaff))
+def delete_child_vaccination_info(request,id):
+    child = get_object_or_404(ChildVaccinated,id=id)
+    child.delete()
+    return Response({"message": "Deleted"})
+
+
+@api_view(['DELETE',])
+@permission_classes((permissions.IsAuthenticated, IsMedicalStaff))
+def delete_mother_vaccination_info(request,id):
+    mother = get_object_or_404(MotherVaccinated,id=id)
+    mother.delete()
+    return Response({"message": "Deleted"})
