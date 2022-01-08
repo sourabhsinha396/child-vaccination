@@ -39,9 +39,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    #third party apps
+    'rest_framework',
+
     # custom apps
     'apps.vaccination',  #You might need to add full path e.g. apps.vaccination in apps.py
-    'apps.accounts'
+    'apps.accounts',
+    'apis.vaccination_api',
 ]
 
 MIDDLEWARE = [
@@ -140,3 +144,11 @@ AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
     "apps.accounts.custom_auth_backend.EmailAuthBackend",
 ]
+
+REST_FRAMEWORK = {
+    # Use Django's standard `django.contrib.auth` permissions,
+    # or allow read-only access for unauthenticated users.
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+    ]
+}
