@@ -22,6 +22,26 @@ class ParentSearchSerializer(serializers.ModelSerializer):
         fields = ("slug","name","phone","child","mother")
     
 
+class ParentCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Parent
+        fields = ("slug","name","phone","aadhar")
+
+
+class MotherCreateSerializer(serializers.ModelSerializer):
+    parent = serializers.SlugRelatedField(queryset=Parent.objects.all(), slug_field='slug')
+    class Meta:
+        model = Mother
+        fields = ("parent","mode_of_delivery","slug","name","last_delivery_date","blood_group","mode_of_delivery","place_of_delivery","remarks")
+
+
+class ChildCreateSerializer(serializers.ModelSerializer):
+    parent = serializers.SlugRelatedField(queryset=Parent.objects.all(), slug_field='slug')
+    mother = serializers.SlugRelatedField(queryset=Mother.objects.all(), slug_field='slug',required=False)
+    class Meta:
+        model = Child
+        fields = ("slug","parent","mother","name","gender","blood_group","date_of_birth","place_of_delivery","remarks")
+
 
 class MotherInfoSerializer(serializers.ModelSerializer):
     child = ChildSerializer(source="parent.child",many=True, read_only=True)
